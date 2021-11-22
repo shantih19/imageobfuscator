@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser.add_argument('seed', help="seed/password")
     parser.add_argument('phrase', help="phrase to encode", nargs= '?')
     parser.add_argument('-o', '--output', help="output path", nargs='?', dest='output')
+    parser.add_argument('-f', '--file', help="phrase is a path to a file to encode", dest='file', action="store_true")
     args = parser.parse_args()
     filename = args.path
     mode = args.mode
@@ -20,7 +21,11 @@ if __name__ == "__main__":
     if mode:
         if args.phrase ==  None:
             parser.error("missing phrase to encode")
-        phrase = args.phrase.encode('utf-8')
+        if args.file:
+            with open( args.phrase ,"rb") as f:
+                phrase = f.read()
+        else:
+            phrase = args.phrase.encode('utf-8')
     
     random.seed(password)
     with Image.open(filename) as img:
@@ -28,9 +33,10 @@ if __name__ == "__main__":
         if mode:
             im2 = img.copy()
             length = len(phrase)
+            print(length)
             x = tuple(random.sample(range(w), w))
             y = tuple(random.sample(range(h), h))
-            im2.putpixel((x[0], y[0]), (length//2, length%2, length//2))
+            im2.putpixel((x[0], y[0]), tuple(length.to_bytes(3, 'big')))
             for i in range(0, length, 3):
                 v = []
                 pixel = (x[(i//3)+1],y[(i//3)+1])
@@ -49,10 +55,19 @@ if __name__ == "__main__":
             text = []
             x = tuple(random.sample(range(w), w))
             y = tuple(random.sample(range(h), h))               
-            length = sum(img.getpixel((x[0], y[0])))
+            length = int.from_bytes(img.getpixel((x[0], y[0])),'big')
+            print(length)
             for i in range(0, length, 3):
                 for b in range(3):
                     if b + i < length:
                         text.append(img.getpixel((x[(i//3)+1],y[(i//3)+1]))[b])
-            print(bytes(text).decode('utf-8'))
+            if args.file:
+                if args.output == None:
+                    parser.error("--output needed with --file")
+                else:
+                    with open(args.output, "wb") as f:
+                        f.write(bytes(text))
+                    print("File saved.")
+            else:
+                print(bytes(text).decode('utf-8'))
             
