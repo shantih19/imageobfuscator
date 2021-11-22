@@ -6,14 +6,15 @@ import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Image Obfuscator",description="Encode and decode data in an image using a seed as a \"password\"")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', '--decode', help='decode (default)', dest='mode', action="store_false")
-    group.add_argument('-e', '--encode', help="encode", dest='mode', action="store_true")
-    parser.add_argument('path', help="image path")
-    parser.add_argument('seed', help="seed/password")
-    parser.add_argument('phrase', help="phrase to encode", nargs= '?')
-    parser.add_argument('-o', '--output', help="output path", nargs='?', dest='output')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('-d', "--decode", help='decode (default)', dest='mode', action="store_false")
+    group.add_argument('-e', "--encode", help="encode", dest='mode', action="store_true")
+    parser.add_argument('-i','--path', help="image path", required=True)
+    parser.add_argument('-s','--seed', help="seed/password", required=True)
+    parser.add_argument('-p' '--phrase', help="phrase to encode", dest="phrase")
+    parser.add_argument('-o', '--output', help="output path", dest='output')
     parser.add_argument('-f', '--file', help="phrase is a path to a file to encode", dest='file', action="store_true")
+    parser.add_argument('-x', '--xor', help="xor with another image (blank for original, required for decoding)", dest='xor', nargs='?', const="?")
     args = parser.parse_args()
     filename = args.path
     mode = args.mode
@@ -33,35 +34,50 @@ if __name__ == "__main__":
         pool = [(x,y) for x in random.sample(range(w), w) for y in random.sample(range(h), h)]
         pool = random.sample(pool, len(pool))
         if mode:
-            im2 = img.copy()
             if img.mode != "RGB":
-                im2 = im2.convert("RGB")
+                img = img.convert("RGB")
+            if args.xor == "?":
+                key = img
+            elif args.xor != None:
+                key = Image.open(args.xor)
             length = len(phrase)
-            im2.putpixel(pool[0], tuple(length.to_bytes(3, 'big')))
+            img.putpixel(pool[0], tuple(length.to_bytes(3, 'big')))
             for i in range(0, length, 3):
                 v = []
                 pixel = pool[i//3+1]
                 for b in range(3):
                     if i + b < length:
-                        v.append(phrase[i+b])
+                        if args.xor != None:
+                            v.append( key.getpixel(pixel)[b] ^ phrase[i+b] )
+                        else:
+                            v.append(  phrase[i+b] )
                     else:
                         v.append(img.getpixel(pixel)[b])
-                im2.putpixel(pixel, tuple(v))
+                img.putpixel(pixel, tuple(v))
             if args.output == None:
-                im2.save(os.path.splitext(filename)[0] + "_encoded.png")
+                img.save(os.path.splitext(filename)[0] + "_encoded.png")
             else:
-                im2.save(args.output)
+                img.save(args.output)
             print("Saved.")
         else:
-            text = []
-            x = tuple(random.sample(range(w), w))
-            y = tuple(random.sample(range(h), h))               
+            text = []             
             length = int.from_bytes(img.getpixel(pool[0]),'big')
             print(length)
+            if args.xor != None:
+                if args.xor != "?":
+                    key = Image.open(args.xor)
+                    if key.mode != "RGB":
+                        key = key.convert("RGB")
+                else:
+                    parser.error("xor image path is required")
             for i in range(0, length, 3):
                 for b in range(3):
                     if b + i < length:
-                        text.append(img.getpixel(pool[i//3+1])[b])
+                        if args.xor != None:
+                            p = key.getpixel(pool[i//3+1])[b]
+                            text.append(p ^ img.getpixel(pool[i//3+1])[b])
+                        else:
+                            text.append(img.getpixel(pool[i//3+1])[b])
             if args.file:
                 if args.output == None:
                     parser.error("--output needed with --file")
