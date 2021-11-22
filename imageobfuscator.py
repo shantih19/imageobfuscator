@@ -5,7 +5,7 @@ import os
 import argparse
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog="Image Obfusctator",description="Encode and decode data in an image using a seed as a \"password\"")
+    parser = argparse.ArgumentParser(prog="Image Obfuscator",description="Encode and decode data in an image using a seed as a \"password\"")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', '--decode', help='decode (default)', dest='mode', action="store_false")
     group.add_argument('-e', '--encode', help="encode", dest='mode', action="store_true")
