@@ -20,6 +20,10 @@ Encode and decode data in an image using a password
                             output path
       -f, --file            phrase is a path to a file to encode
 
+### Install
+
+    pip install imageobfuscator-shantih19
+
 ### Dependencies
 - Python 3.x
 - [Pillow](https://github.com/python-pillow/Pillow "Pillow")
