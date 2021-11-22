@@ -3,7 +3,7 @@
 Encode and decode data in an image using a password
 
 ### Usage
-    usage: Image Obfustator [-h] [-d | -e] [-o [OUTPUT]] [-f] path seed [phrase]
+    usage: Image Obfuscator [-h] [-d | -e] [-o [OUTPUT]] [-f] path seed [phrase]
     
     Encode and decode data in an image using a seed as a "password"
     
