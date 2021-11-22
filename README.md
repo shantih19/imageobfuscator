@@ -26,5 +26,5 @@ Encode and decode data in an image using a password
 
 ### License
 
-This program is distributed under [wtfpl](http://www.wtfpl.net/).
+This program is distributed AS IS, with no guarantees, under [wtfpl](http://www.wtfpl.net/).
 
