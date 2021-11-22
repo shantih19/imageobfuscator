@@ -30,16 +30,17 @@ if __name__ == "__main__":
     random.seed(password)
     with Image.open(filename) as img:
         w, h = img.size
+        pool = [(x,y) for x in random.sample(range(w), w) for y in random.sample(range(h), h)]
+        pool = random.sample(pool, len(pool))
         if mode:
             im2 = img.copy()
+            if img.mode != "RGB":
+                im2 = im2.convert("RGB")
             length = len(phrase)
-            print(length)
-            x = tuple(random.sample(range(w), w))
-            y = tuple(random.sample(range(h), h))
-            im2.putpixel((x[0], y[0]), tuple(length.to_bytes(3, 'big')))
+            im2.putpixel(pool[0], tuple(length.to_bytes(3, 'big')))
             for i in range(0, length, 3):
                 v = []
-                pixel = (x[(i//3)+1],y[(i//3)+1])
+                pixel = pool[i//3+1]
                 for b in range(3):
                     if i + b < length:
                         v.append(phrase[i+b])
@@ -49,18 +50,18 @@ if __name__ == "__main__":
             if args.output == None:
                 im2.save(os.path.splitext(filename)[0] + "_encoded.png")
             else:
-                im2.save(output)
+                im2.save(args.output)
             print("Saved.")
         else:
             text = []
             x = tuple(random.sample(range(w), w))
             y = tuple(random.sample(range(h), h))               
-            length = int.from_bytes(img.getpixel((x[0], y[0])),'big')
+            length = int.from_bytes(img.getpixel(pool[0]),'big')
             print(length)
             for i in range(0, length, 3):
                 for b in range(3):
                     if b + i < length:
-                        text.append(img.getpixel((x[(i//3)+1],y[(i//3)+1]))[b])
+                        text.append(img.getpixel(pool[i//3+1])[b])
             if args.file:
                 if args.output == None:
                     parser.error("--output needed with --file")
