@@ -4,7 +4,7 @@ import sys
 import os
 import argparse
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(prog="Image Obfuscator",description="Encode and decode data in an image using a seed as a \"password\"")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-d', "--decode", help='decode (default)', dest='mode', action="store_false")
@@ -87,4 +87,7 @@ if __name__ == "__main__":
                     print("File saved.")
             else:
                 print(bytes(text).decode('utf-8'))
+
+if __name__ == "__main__":
+    main()
             
